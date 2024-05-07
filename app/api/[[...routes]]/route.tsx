@@ -399,7 +399,8 @@ app.frame('/share', (c) => {
             fontWeight: 400,
             fontSize: 30,
             width: 780,
-            textAlign: 'center'
+            textAlign: 'center',
+            justifyContent: "center",
           }}
         >
           {state.description}
@@ -412,7 +413,8 @@ app.frame('/share', (c) => {
             fontWeight: 400,
             fontSize: 30,
             width: 780,
-            textAlign: 'center'
+            textAlign: 'center',
+            justifyContent: "center",
           }}
         >
           {`Reward: ${state.reward} `}
@@ -420,8 +422,7 @@ app.frame('/share', (c) => {
       </div>
     ),
     intents: [
-      <Button.Link href={`https://warpcast.com/~/compose?text=Hey%2C%20I%20just%20created%20a%20bounty%20on%20poidh%21
-      !&embeds[]=https://frame-degen.poidh.xyz/api/bounty/${c.transactionId}`}>Share</Button.Link>,
+      <Button.Link href={`https://warpcast.com/~/compose?text=Hey%2C+I+just+created+a+bounty+on+poidh%21+Check+it+out&embeds[]=https://frame-degen.poidh.xyz/api/bounty/${c.transactionId}`}>Share</Button.Link>,
       <Button.Link href={`https://explorer.degen.tips/tx/${c.transactionId}`}> Check TxN </Button.Link>,
     ],
   })
@@ -462,26 +463,36 @@ app.frame('/bounty/:txHash', async (c) => {
 
   // get data from txn hash
 
-  const data = await fetch(`https://explorer.degen.tips/api/v2/transactions/${txHash}`, {
+  // const data = await fetch(`https://explorer.degen.tips/api/v2/transactions/${txHash}`, {
+  //   method: 'GET',
+  //   headers: {
+  //     'Accept': 'application/json'
+  //   }
+  // })
+  //   .then(response => response.json())
+
+  // Fetch data from the API endpoint using the transaction hash
+  const dataBounty = await fetch(`https://explorer.degen.tips/api/v2/transactions/${txHash}/logs`, {
     method: 'GET',
     headers: {
       'Accept': 'application/json'
     }
   })
-    .then(response => response.json())
+    .then(response => response.json());
 
-  console.log({ data: data.decoded_input.parameters })
-  const title = data.decoded_input.parameters.find((gayatri: any) => gayatri.name === 'name').value
-  const description = data.decoded_input.parameters.find((gayatri: any) => gayatri.name === 'description').value
+  const parameters = dataBounty.items[0].decoded.parameters
 
-  const valueResult = convert(data.value)
+  const bountyId: string | undefined = parameters.find((key: any) => key.name === 'id')?.value
+  const title: string | undefined = parameters.find((key: any) => key.name === 'name')?.value
+  const description: string | undefined = parameters.find((key: any) => key.name === 'description')?.value
+  const amount: string | undefined = parameters.find((key: any) => key.name === 'amount')?.value
 
-  // const title = data: data.decoded_input.parameters
+  const valueResult = convert(amount || "")
 
   return c.res({
     action: '',
     image: (
-      <div style={{ display: "flex", flexDirection: 'column', justifyContent: "center", alignItems: "center", height: "100%" }}>
+      <div style={{ display: "flex", flexDirection: 'column', justifyContent: "center", alignItems: "center", height: "100%", textAlign: 'center' }}>
         {simpleMessage}
         <div
           style={{
@@ -501,8 +512,9 @@ app.frame('/bounty/:txHash', async (c) => {
             display: 'flex',
             fontWeight: 400,
             fontSize: 30,
+            justifyContent: "center",
             width: 780,
-            textAlign: 'center'
+            textAlign: 'center',
           }}
         >
           {description}
@@ -515,13 +527,17 @@ app.frame('/bounty/:txHash', async (c) => {
             fontWeight: 400,
             fontSize: 30,
             width: 780,
+            justifyContent: "center",
             textAlign: 'center'
           }}
         >
           {`Reward: $DEGEN ${valueResult}`}
         </div>
       </div>
-    )
+    ),
+    intents: [
+      <Button.Link href={`https://degen.poidh.xyz/bounty/${bountyId}`}>Check out the bounty </Button.Link>,
+    ]
   })
 })
 
