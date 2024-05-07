@@ -421,7 +421,7 @@ app.frame('/share', (c) => {
     ),
     intents: [
       <Button.Link href={`https://warpcast.com/~/compose?text=Hey%2C%20I%20just%20created%20a%20bounty%20on%20poidh%21
-      !&embeds[]=https://frame-degen.poidh.xyz/api//bounty/${c.transactionId}`}>Share</Button.Link>,
+      !&embeds[]=https://frame-degen.poidh.xyz/api/bounty/${c.transactionId}`}>Share</Button.Link>,
       <Button.Link href={`https://explorer.degen.tips/tx/${c.transactionId}`}> Check TxN </Button.Link>,
     ],
   })
@@ -429,6 +429,7 @@ app.frame('/share', (c) => {
 
 app.transaction('/mint', (c) => {
   const state = c.previousState;
+  console.log("🚀 ~ app.transaction ~ state:", state)
 
   return c.contract({
     abi,
