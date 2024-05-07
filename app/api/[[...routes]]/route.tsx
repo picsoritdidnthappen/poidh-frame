@@ -531,7 +531,7 @@ app.frame('/bounty/:txHash', async (c) => {
             textAlign: 'center'
           }}
         >
-          {`Reward: $DEGEN ${valueResult}`}
+          {`reward: ${valueResult} degen`}
         </div>
       </div>
     ),
