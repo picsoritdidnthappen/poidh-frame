@@ -12,7 +12,6 @@ import { abi } from "../../abi"
 type State = {
   title: string
   description: string
-  type: string
   reward: number
   bountyType: string
 }
@@ -23,7 +22,6 @@ const app = new Frog<{ State: State }>({
   initialState: {
     title: "",
     description: "",
-    type: "",
     reward: 0,
     bountyType: ""
   },
@@ -67,7 +65,7 @@ const { Heading } = createSystem({
 const simpleMessage = <div
   style={{
     alignItems: 'center',
-    backgroundImage: `url("https://phoidh-frame.vercel.app//bg-poidh.png")`,
+    backgroundImage: `url("https://frame-degen.poidh.xyz/bg-poidh.png")`,
     backgroundSize: '100% 100%',
     display: 'flex',
     flexDirection: 'column',
@@ -97,7 +95,7 @@ const simpleMessage = <div
     backgroundSize: "contain",
     position: "absolute",
     top: 0,
-    backgroundImage: `url("https://phoidh-frame.vercel.app//logo-poidh.png")`,
+    backgroundImage: `url("https://frame-degen.poidh.xyz/logo-poidh.png")`,
   }}
   >
   </div>
@@ -106,7 +104,7 @@ const simpleMessage = <div
 app.frame('/', (c) => {
   return c.res({
     action: '/bountytitle',
-    image: "https://phoidh-frame.vercel.app//screen-1.png",
+    image: "https://frame-degen.poidh.xyz/screen-1.png",
     intents: [
       <Button value="start">Create a Bounty</Button>,
     ],
@@ -423,7 +421,7 @@ app.frame('/share', (c) => {
     ),
     intents: [
       <Button.Link href={`https://warpcast.com/~/compose?text=Hey%2C%20I%20just%20created%20a%20bounty%20on%20poidh%21
-      !&embeds[]=https://phoidh-frame.vercel.app//api//bounty/${c.transactionId}`}>Share</Button.Link>,
+      !&embeds[]=https://frame-degen.poidh.xyz/api//bounty/${c.transactionId}`}>Share</Button.Link>,
       <Button.Link href={`https://explorer.degen.tips/tx/${c.transactionId}`}> Check TxN </Button.Link>,
     ],
   })
@@ -435,7 +433,7 @@ app.transaction('/mint', (c) => {
   return c.contract({
     abi,
     chainId: 'eip155:666666666',
-    functionName: state.type == 'solo' ? "createSoloBounty" : "createOpenBounty",
+    functionName: state.bountyType == 'solo' ? "createSoloBounty" : "createOpenBounty",
     args: [
       state.title, state.description
     ],
@@ -525,8 +523,6 @@ app.frame('/bounty/:txHash', async (c) => {
     )
   })
 })
-
-// commit
 
 devtools(app, { serveStatic })
 
