@@ -422,7 +422,7 @@ app.frame('/share', (c) => {
       </div>
     ),
     intents: [
-      <Button.Link href={`https://warpcast.com/~/compose?text=Hey%2C+I+just+created+a+bounty+on+poidh%21+Check+it+out&embeds[]=https://frame-degen.poidh.xyz/api/bounty/${c.transactionId}`}>Share</Button.Link>,
+      <Button.Link href={`https://warpcast.com/~/compose?text=I+just+created+a+bounty+on+poidh%21&embeds[]=https://frame-degen.poidh.xyz/api/bounty/${c.transactionId}`}>Share</Button.Link>,
       <Button.Link href={`https://explorer.degen.tips/tx/${c.transactionId}`}> Check TxN </Button.Link>,
     ],
   })
