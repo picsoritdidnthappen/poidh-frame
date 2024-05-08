@@ -3,11 +3,11 @@
 // import { fonts } from '@/app/fonts/fonts'
 import { Button, Frog, TextInput, parseEther } from 'frog'
 import { devtools } from 'frog/dev'
-// import { neynar } from 'frog/hubs'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import { createSystem } from 'frog/ui'
 import { abi } from "../../abi"
+import { pinata } from 'frog/hubs'
 
 type State = {
   title: string
@@ -37,7 +37,7 @@ const app = new Frog<{ State: State }>({
     ],
   },
   // Supply a Hub to enable frame verification.
-  // hub: neynar({ apiKey: 'NEYNAR_FROG_FM' })
+  hub: pinata()
 })
 
 // Uncomment to use Edge Runtime
