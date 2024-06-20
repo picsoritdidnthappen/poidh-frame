@@ -1,19 +1,24 @@
 /** @jsxImportSource frog/jsx */
 
 // import { fonts } from '@/app/fonts/fonts'
+import { JsonRpcProvider, ethers, parseUnits } from 'ethers'
 import { Button, Frog, TextInput, parseEther } from 'frog'
 import { devtools } from 'frog/dev'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import { createSystem } from 'frog/ui'
 import { abi } from "../../abi"
-import { pinata } from 'frog/hubs'
+import { AbiCoder, BrowserProvider } from "ethers";
+import { getTransactionReceipt } from '@/utils/getTxnDetails'
+import chains from '@/utils/config'
+
 
 type State = {
   title: string
   description: string
   reward: number
   bountyType: string
+  chain: string
 }
 
 const app = new Frog<{ State: State }>({
@@ -23,7 +28,8 @@ const app = new Frog<{ State: State }>({
     title: "",
     description: "",
     reward: 0,
-    bountyType: ""
+    bountyType: "",
+    cahin: ""
   },
 
   imageOptions: {
@@ -37,7 +43,7 @@ const app = new Frog<{ State: State }>({
     ],
   },
   // Supply a Hub to enable frame verification.
-  hub: pinata()
+  // hub: pinata()
 })
 
 // Uncomment to use Edge Runtime
@@ -178,7 +184,7 @@ app.frame('/bountydescription', (c) => {
   }
 
   return c.res({
-    action: '/bountyreward',
+    action: '/chain',
     image: (
       <div style={{ display: "flex", flexDirection: 'column', justifyContent: "center", alignItems: "center", height: "100%" }}>
         {simpleMessage}
@@ -215,7 +221,7 @@ app.frame('/bountydescription', (c) => {
   })
 })
 
-app.frame('/bountyreward', (c) => {
+app.frame('/chain', (c) => {
   const { buttonValue, inputText, deriveState } = c;
 
   if (!inputText?.length) {
@@ -226,6 +232,64 @@ app.frame('/bountyreward', (c) => {
     deriveState((previousState: State) => {
       previousState.description = inputText;
     });
+  }
+
+  return c.res({
+    action: '/bountyreward',
+    image: (
+      <div style={{ display: "flex", flexDirection: 'column', justifyContent: "center", alignItems: "center", height: "100%" }}>
+        {simpleMessage}
+        <div
+          style={{
+            color: 'white',
+            fontFamily: 'Inter',
+            display: 'flex',
+            fontWeight: 800,
+            fontSize: 60,
+          }}
+        >
+          chain
+        </div>
+        <div
+          style={{
+            color: 'white',
+            fontFamily: 'Inter',
+            display: 'flex',
+            fontWeight: 400,
+            fontSize: 30,
+            width: 780,
+            textAlign: 'center'
+          }}
+        >
+          poidh supports 3 chains, you can select the chain you want to create the bounty on
+        </div>
+      </div>
+    ),
+    intents: [
+      <Button value="base">Base</Button>,
+      <Button value="arbitrium">Arbitrium</Button>,
+      <Button value="degen">Degen</Button>,
+    ],
+  })
+})
+
+app.frame('/bountyreward', (c) => {
+  const { buttonValue, deriveState } = c;
+
+  if (buttonValue) {
+    deriveState((previousState: State) => {
+      previousState.chain = buttonValue;
+    });
+  }
+
+  let amt = ""
+
+  if (buttonValue == "degen") {
+    amt = "DEGEN"
+  }
+
+  if (buttonValue && ['base', 'arbitrium'].includes(buttonValue)) {
+    amt = "ETH"
   }
 
   return c.res({
@@ -255,12 +319,12 @@ app.frame('/bountyreward', (c) => {
             textAlign: 'center'
           }}
         >
-          specify the reward amount you are offering in DEGEN (please note, the poidh smart contract will deduct a 2.5% fee for all completed bounties)
+          specify the reward amount you are offering in {amt} (please note, the poidh smart contract will deduct a 2.5% fee for all completed bounties)
         </div>
       </div>
     ),
     intents: [
-      <TextInput placeholder="Enter your $DEGEN..." />,
+      <TextInput placeholder={`Enter your ${amt}...`} />,
       <Button value="submit">Submit</Button>,
     ],
   })
@@ -275,7 +339,7 @@ app.frame('/bountytype', (c) => {
 
   if (buttonValue === 'submit') {
     deriveState(previousState => {
-      previousState.reward = parseInt(inputText);
+      previousState.reward = parseFloat(inputText);
     });
   }
 
@@ -371,9 +435,24 @@ app.frame('/wallet', (c) => {
 })
 
 app.frame('/share', (c) => {
+  console.log("🚀 ~ app.frame ~ c:", c)
   const { deriveState } = c;
 
   const state = deriveState();
+
+  let link = ""
+
+  if (state.chain == "degen") {
+    link = 'https://explorer.degen.tips/'
+  }
+
+  if (state.chain == "base") {
+    link = 'https://basescan.org/'
+  }
+
+  if (state.chain == "arbitrium") {
+    link = 'https://arbiscan.io/'
+  }
 
   return c.res({
     action: '/',
@@ -422,8 +501,8 @@ app.frame('/share', (c) => {
       </div>
     ),
     intents: [
-      <Button.Link href={`https://warpcast.com/~/compose?text=Hey%2C+I+just+created+a+bounty+on+poidh%21+Check+it+out&embeds[]=https://frame-degen.poidh.xyz/api/bounty/${c.transactionId}`}>Share</Button.Link>,
-      <Button.Link href={`https://explorer.degen.tips/tx/${c.transactionId}`}> Check TxN </Button.Link>,
+      <Button.Link href={`https://warpcast.com/~/compose?text=Hey%2C+I+just+created+a+bounty+on+poidh%21+Check+it+out&embeds[]=https://frame-degen.poidh.xyz/api/bounty/${state.chain}/${c.transactionId}`}>Share</Button.Link>,
+      <Button.Link href={`${link}tx/${c.transactionId}`}> Check TxN </Button.Link>,
     ],
   })
 })
@@ -432,16 +511,41 @@ app.transaction('/mint', (c) => {
   const state = c.previousState;
   console.log("🚀 ~ app.transaction ~ state:", state)
 
-  return c.contract({
+  let chain = 8453
+  let contract = ""
+  let reward
+
+  if (state.chain == "degen") {
+    chain = 666666666
+    contract = '0x2445BfFc6aB9EEc6C562f8D7EE325CddF1780814'
+    reward = parseEther(state.reward + "")
+  }
+
+  if (state.chain == "base") {
+    chain = 8453
+    contract = '0xb502c5856F7244DccDd0264A541Cc25675353D39'
+    reward = parseUnits(String(state.reward), "ether")
+  }
+
+  if (state.chain == "arbitrium") {
+    chain = 42161
+    contract = '0x0Aa50ce0d724cc28f8F7aF4630c32377B4d5c27d'
+    reward = parseUnits(String(state.reward), "ether")
+  }
+
+  const payload = {
     abi,
-    chainId: 'eip155:666666666',
+    chainId: `eip155:${chain}` as any,
     functionName: state.bountyType == 'solo' ? "createSoloBounty" : "createOpenBounty",
     args: [
       state.title, state.description
     ],
-    to: '0x2445BfFc6aB9EEc6C562f8D7EE325CddF1780814',
-    value: parseEther(state.reward + "")
-  })
+    to: `${contract}` as any,
+    value: `${reward}` as any
+  }
+  console.log("🚀 ~ app.transaction ~ payload:", payload)
+
+  return c.contract(payload as any)
 })
 
 const convert = (rawValue: string) => {
@@ -454,38 +558,23 @@ const convert = (rawValue: string) => {
   }
 }
 
-app.frame('/bounty/:txHash', async (c) => {
+app.frame('/bounty/:chain/:txHash', async (c) => {
   const { deriveState, req } = c;
+
+  console.log(c)
 
   // get the txn hash
   const txHash = c.req.param('txHash')
-  console.log("🚀 ~ app.frame ~ txHash:", txHash)
+  const chain = c.req.param('chain') as "sepolia" | "degen" | 'arbitrum' | "base";
 
-  // get data from txn hash
+  let data;
+  if (chain === 'degen') {
+    data = await getTxnDataFromDegen(txHash)
+  } else {
+    data = await getTxnDataFromChain(chain)(txHash)
+  }
 
-  // const data = await fetch(`https://explorer.degen.tips/api/v2/transactions/${txHash}`, {
-  //   method: 'GET',
-  //   headers: {
-  //     'Accept': 'application/json'
-  //   }
-  // })
-  //   .then(response => response.json())
-
-  // Fetch data from the API endpoint using the transaction hash
-  const dataBounty = await fetch(`https://explorer.degen.tips/api/v2/transactions/${txHash}/logs`, {
-    method: 'GET',
-    headers: {
-      'Accept': 'application/json'
-    }
-  })
-    .then(response => response.json());
-
-  const parameters = dataBounty.items[0].decoded.parameters
-
-  const bountyId: string | undefined = parameters.find((key: any) => key.name === 'id')?.value
-  const title: string | undefined = parameters.find((key: any) => key.name === 'name')?.value
-  const description: string | undefined = parameters.find((key: any) => key.name === 'description')?.value
-  const amount: string | undefined = parameters.find((key: any) => key.name === 'amount')?.value
+  const { amount, title, description, bountyId } = data
 
   const valueResult = convert(amount || "")
 
@@ -531,7 +620,7 @@ app.frame('/bounty/:txHash', async (c) => {
             textAlign: 'center'
           }}
         >
-          {`Reward: $DEGEN ${valueResult}`}
+          {`Reward: ${valueResult} ${chain === 'degen' ? "$DEGEN" : "ETH"}`}
         </div>
       </div>
     ),
@@ -539,9 +628,43 @@ app.frame('/bounty/:txHash', async (c) => {
       <Button.Link href={`https://degen.poidh.xyz/bounty/${bountyId}`}>Check out the bounty </Button.Link>,
     ]
   })
+
+
 })
 
 devtools(app, { serveStatic })
 
 export const GET = handle(app)
 export const POST = handle(app)
+
+
+export const getTxnDataFromDegen = async (txHash: string): Promise<{ amount: string | undefined; title: string | undefined; description: string | undefined; bountyId: string | undefined }> => {
+  const dataBounty = await fetch(`https://explorer.degen.tips/api/v2/transactions/${txHash}/logs`, {
+    method: 'GET',
+    headers: {
+      'Accept': 'application/json'
+    }
+  })
+    .then(response => response.json())
+
+  const parameters = dataBounty.items[0].decoded.parameters
+
+  const bountyId: string | undefined = parameters.find((key: any) => key.name === 'id')?.value
+  const title: string | undefined = parameters.find((key: any) => key.name === 'name')?.value
+  const description: string | undefined = parameters.find((key: any) => key.name === 'description')?.value
+  const amount: string | undefined = parameters.find((key: any) => key.name === 'amount')?.value
+  return { amount, title, description, bountyId }
+}
+
+const getTxnDataFromChain = (chain: "sepolia" | "degen" | 'arbitrum' | "base") => async (txHash: string) => {
+
+  const currChainConfig = chains[chain]
+
+  const data = await getTransactionReceipt(
+    currChainConfig.jsonProviderUrl,
+    txHash
+  );
+
+  const { amount, title, description, bountyId } = data
+  return { amount, title, description, bountyId, config: currChainConfig }
+};
