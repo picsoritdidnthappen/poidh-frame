@@ -558,7 +558,7 @@ const convert = (rawValue: string) => {
   }
 }
 
-app.frame('/bounty/:chain/:txHash', async (c) => {
+app.frame('/b/:chain/:txHash', async (c) => {
   const { deriveState, req } = c;
 
   // get the txn hash
