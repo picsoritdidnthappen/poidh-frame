@@ -639,7 +639,7 @@ export const GET = handle(app)
 export const POST = handle(app)
 
 
-export const getTxnDataFromDegen = async (txHash: string): Promise<{ amount: string | undefined; title: string | undefined; description: string | undefined; bountyId: string | undefined }> => {
+const getTxnDataFromDegen = async (txHash: string): Promise<{ amount: string | undefined; title: string | undefined; description: string | undefined; bountyId: string | undefined }> => {
   const dataBounty = await fetch(`https://explorer.degen.tips/api/v2/transactions/${txHash}/logs`, {
     method: 'GET',
     headers: {
