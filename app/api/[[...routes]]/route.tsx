@@ -561,11 +561,12 @@ const convert = (rawValue: string) => {
 app.frame('/bounty/:chain/:txHash', async (c) => {
   const { deriveState, req } = c;
 
-  console.log(c)
-
   // get the txn hash
   const txHash = c.req.param('txHash')
   const chain = c.req.param('chain') as "sepolia" | "degen" | 'arbitrum' | "base";
+
+  console.log("tx:", txHash)
+  console.log("chain:", chain)
 
   let data;
   if (chain === 'degen') {
@@ -625,7 +626,7 @@ app.frame('/bounty/:chain/:txHash', async (c) => {
       </div>
     ),
     intents: [
-      <Button.Link href={`https://degen.poidh.xyz/bounty/${bountyId}`}>Check out the bounty </Button.Link>,
+      <Button.Link href={`https://poidh.xyz/${chain}/bounty/${bountyId}`}>Check out the bounty </Button.Link>,
     ]
   })
 

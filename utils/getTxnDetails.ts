@@ -14,6 +14,8 @@ export async function getTransactionReceipt(rpcUrl: string, transactionHash: str
 
     const receipt = transactionReceipt?.toJSON()
 
+    console.log("Receipt:", receipt)
+
     const logs = receipt.logs;
     const data = logs?.[0]?.data as any
 
@@ -21,7 +23,9 @@ export async function getTransactionReceipt(rpcUrl: string, transactionHash: str
         ["uint256", "address", "string", "string", "uint256", "uint256"],
         data
     );
-    const [poidhId, , poidhName, poidhDescription, , poidhAmount] = decodedInput;
+    const [poidhId, , poidhName, poidhDescription, poidhAmount] = decodedInput;
+
+    console.log("DI", decodedInput)
 
     return {
         bountyId: poidhId.toString(),
