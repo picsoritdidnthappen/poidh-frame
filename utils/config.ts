@@ -19,11 +19,11 @@ const chains = {
             nftContract: '0xDdfb1A53E7b73Dba09f79FCA24765C593D447a80',
         },
     },
-    arbitrum: {
+    art: {
         name: 'Arbitrum One',
         chainId: 42161,
         jsonProviderUrl:
-            'https://arbitrum-mainnet.infura.io/v3/91b50d6f88e74281bc3240160cf1b3eb',
+            'https://arbitrum.llamarpc.com',
         contracts: {
             mainContract: '0x0Aa50ce0d724cc28f8F7aF4630c32377B4d5c27d',
             nftContract: '0xDdfb1A53E7b73Dba09f79FCA24765C593D447a80',
@@ -51,7 +51,7 @@ export const networks = [
         chainId: 666666666,
     },
     {
-        name: 'arbitrum',
+        name: 'art',
         chainId: 42161,
     },
     {
