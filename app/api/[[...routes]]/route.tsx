@@ -29,7 +29,7 @@ const app = new Frog<{ State: State }>({
     description: "",
     reward: 0,
     bountyType: "",
-    cahin: ""
+    chain: ""
   },
 
   imageOptions: {
@@ -267,7 +267,7 @@ app.frame('/chain', (c) => {
     ),
     intents: [
       <Button value="base">Base</Button>,
-      <Button value="arbitrium">Arbitrium</Button>,
+      <Button value="art">Arbitrum</Button>,
       <Button value="degen">Degen</Button>,
     ],
   })
@@ -288,7 +288,7 @@ app.frame('/bountyreward', (c) => {
     amt = "DEGEN"
   }
 
-  if (buttonValue && ['base', 'arbitrium'].includes(buttonValue)) {
+  if (buttonValue && ['base', 'art'].includes(buttonValue)) {
     amt = "ETH"
   }
 
@@ -450,7 +450,7 @@ app.frame('/share', (c) => {
     link = 'https://basescan.org/'
   }
 
-  if (state.chain == "arbitrium") {
+  if (state.chain == "art") {
     link = 'https://arbiscan.io/'
   }
 
@@ -527,7 +527,7 @@ app.transaction('/mint', (c) => {
     reward = parseUnits(String(state.reward), "ether")
   }
 
-  if (state.chain == "arbitrium") {
+  if (state.chain == "art") {
     chain = 42161
     contract = '0x0Aa50ce0d724cc28f8F7aF4630c32377B4d5c27d'
     reward = parseUnits(String(state.reward), "ether")
@@ -563,7 +563,7 @@ app.frame('/b/:chain/:txHash', async (c) => {
 
   // get the txn hash
   const txHash = c.req.param('txHash')
-  const chain = c.req.param('chain') as "sepolia" | "degen" | 'arbitrum' | "base";
+  const chain = c.req.param('chain') as "sepolia" | "degen" | 'art' | "base";
 
   console.log("tx:", txHash)
   console.log("chain:", chain)
@@ -657,7 +657,7 @@ const getTxnDataFromDegen = async (txHash: string): Promise<{ amount: string | u
   return { amount, title, description, bountyId }
 }
 
-const getTxnDataFromChain = (chain: "sepolia" | "degen" | 'arbitrum' | "base") => async (txHash: string) => {
+const getTxnDataFromChain = (chain: "sepolia" | "degen" | 'art' | "base") => async (txHash: string) => {
 
   const currChainConfig = chains[chain]
 
