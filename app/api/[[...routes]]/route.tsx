@@ -496,7 +496,7 @@ app.frame('/share', (c) => {
             justifyContent: "center",
           }}
         >
-          {`Reward: ${state.reward} `}
+          {`reward: ${state.reward} `}
         </div>
       </div>
     ),
